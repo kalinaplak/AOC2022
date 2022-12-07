@@ -1,5 +1,5 @@
 const fs = require('fs');
-import { distinct, intersect, range } from 'powerseq';
+import { distinct } from 'powerseq';
 
 function loadFile() {
     const file: string = fs.readFileSync('./day6/input.txt', "utf-8");
