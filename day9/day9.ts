@@ -1,4 +1,4 @@
-import { distinct, max, min, repeat, repeatvalue } from "powerseq";
+import { distinct, repeatvalue } from "powerseq";
 
 const fs = require('fs');
 
