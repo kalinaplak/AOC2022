@@ -1,12 +1,13 @@
 import * as fs from 'fs';
-import { distinct } from 'powerseq';
 
 type Point = [number, number];
 
 interface Sensor {
     sensor: Point;
     beacon: Point;
+    distance: number;
 }
+
 function loadFile() {
     return fs.readFileSync('./day15/input.txt', 'utf-8')
         .split('\n')
@@ -15,11 +16,9 @@ function loadFile() {
             const [s, b] = line.split(': closest beacon is at ');
             const [sx, sy] = s.split(', ');
             const [bx, by] = b.split(', ');
-            const sensorX = parseInt(sx.replace('x=', ''));
-            const sensorY = parseInt(sy.replace('y=', ''));
-            const beaconX = parseInt(bx.replace('x=', ''));
-            const beaconY = parseInt(by.replace('y=', ''));
-            return { sensor: [sensorX, sensorY], beacon: [beaconX, beaconY] } as Sensor;
+            const sensor = [parseInt(sx.replace('x=', '')), parseInt(sy.replace('y=', ''))] as Point;
+            const beacon = [parseInt(bx.replace('x=', '')), parseInt(by.replace('y=', ''))] as Point;
+            return { sensor, beacon, distance: calculateDistance(sensor, beacon) } as Sensor;
         });
 }
 
@@ -28,21 +27,25 @@ function calculateDistance([xFrom, yFrom]: Point, [xTo, yTo]: Point) {
 };
 
 function calculateRound1() {
-    const points = [];
     const sensors = loadFile();
     const resultY = 2000000;
+    const points = new Set();
+
     sensors.forEach(s => {
-        const manhattanDistance = calculateDistance(s.sensor, s.beacon);
-        const [sensorX, sensorY] = s.sensor;
-        if ((sensorY - manhattanDistance) <= resultY && resultY <= (sensorY + manhattanDistance)) {
-            const distanceLeft = manhattanDistance - Math.abs(resultY - sensorY);
-            for (let x = (sensorX - distanceLeft); x <= (sensorX + distanceLeft); x++) {
-                points.push([x, resultY]);
+        if ((s.sensor[1] - s.distance) <= resultY && resultY <= (s.sensor[1] + s.distance)) {
+            const distanceLeft = s.distance - Math.abs(resultY - s.sensor[1]);
+            for (let i = s.sensor[0] - distanceLeft; i <= s.sensor[0] + distanceLeft; i++) {
+                points.add(i);
             }
         }
+    }) 
+
+    sensors.forEach(s => {
+        if (s.beacon[1] === resultY)
+            points.delete(s.beacon[0]);
     });
-    const filteredPoints = points.filter(p => !sensors.find(s => s.beacon[0] === p[0] && s.beacon[1] === p[1]))
-    return [...distinct(filteredPoints.map(p => p[0] + ',' + p[1]))].length;
+
+    return points.size;
 }
 
 console.log(calculateRound1());
